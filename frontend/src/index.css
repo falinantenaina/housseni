@@ -1,0 +1,319 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ETS HOUSSENI - Cobalt Blue Design System */
+    --background: #0f172a;
+    --foreground: #f5f5f5;
+
+    --card: #171c22;
+    --card-foreground: #f5f5f5;
+
+    --popover: #1c2128;
+    --popover-foreground: #f5f5f5;
+
+    --primary: #0059b3;
+    --primary-foreground: #ffffff;
+
+    --secondary: #262b33;
+    --secondary-foreground: #f5f5f5;
+
+    --muted: #262b33;
+    --muted-foreground: #8a8f98;
+
+    --accent: #3d7fe6;
+    --accent-foreground: #ffffff;
+
+    --destructive: #d32f2f;
+    --destructive-foreground: #ffffff;
+
+    --border: #2d323a;
+    --input: #262b33;
+    --ring: #1565c0;
+
+    --radius: 0.375rem;
+
+    /* Custom tokens */
+    --blue-primary: #1565c0;
+    --blue-hover: #0f4ea3;
+    --blue-light: #2f80ff;
+    --blue-dim: rgba(21, 101, 192, 0.15);
+    --blue-border: rgba(21, 101, 192, 0.3);
+
+    --surface-1: #1c2128;
+    --surface-2: #262b33;
+    --surface-3: #303540;
+
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.4);
+    --shadow-blue: 0 4px 20px rgba(21, 101, 192, 0.25);
+  }
+
+  .light {
+    --background: #f7f7f7;
+    --foreground: #0f172a;
+
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+
+    --primary: #1565c0;
+    --primary-foreground: #ffffff;
+
+    --secondary: #e8eaed;
+    --secondary-foreground: #0f172a;
+
+    --muted: #e8eaed;
+    --muted-foreground: #6b7280;
+
+    --accent: #1565c0;
+    --accent-foreground: #ffffff;
+
+    --destructive: #d32f2f;
+    --destructive-foreground: #ffffff;
+
+    --border: #d6d9de;
+    --input: #e8eaed;
+    --ring: #1565c0;
+
+    --surface-1: #ffffff;
+    --surface-2: #f0f2f5;
+    --surface-3: #e4e7eb;
+
+    --blue-dim: rgba(21, 101, 192, 0.08);
+    --blue-border: rgba(21, 101, 192, 0.2);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground overflow-x-hidden;
+    font-family: "Barlow", sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+}
+
+@layer components {
+  /* Cards */
+  .card-base {
+    @apply bg-card border border-border rounded-md;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-hover {
+    @apply card-base transition-all duration-200 hover:border-primary;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground font-semibold px-5 py-2.5 rounded-md
+           transition-all duration-200 hover:bg-[#0f4ea3] active:scale-[0.98]
+           focus:outline-none focus:ring-2 focus:ring-primary;
+    font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.05em;
+    font-size: 0.9rem;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-foreground font-semibold px-5 py-2.5 rounded-md
+           border border-border transition-all duration-200 hover:bg-secondary
+           focus:outline-none focus:ring-2 focus:ring-primary;
+    font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.05em;
+    font-size: 0.9rem;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-primary font-semibold px-5 py-2.5 rounded-md
+           border border-primary transition-all duration-200 hover:bg-primary hover:text-white
+           focus:outline-none focus:ring-2 focus:ring-primary;
+    font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.05em;
+    font-size: 0.9rem;
+  }
+
+  /* Section label */
+  .section-label {
+    @apply inline-block text-primary font-semibold text-sm tracking-widest uppercase mb-3;
+    font-family: "Barlow Condensed", sans-serif;
+  }
+
+  /* Section title */
+  .section-title {
+    @apply text-foreground text-3xl sm:text-4xl font-bold mb-2;
+    font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.03em;
+  }
+
+  /* Input */
+  .input-base {
+    @apply bg-input border border-border rounded-md px-4 py-2.5 text-foreground
+           placeholder:text-muted-foreground transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary;
+  }
+
+  /* Blue accent line */
+  .accent-line {
+    @apply block w-12 h-1 bg-primary mt-3 mb-6;
+  }
+
+  /* Badge */
+  .badge-primary {
+    @apply inline-block bg-primary text-white text-xs font-semibold px-2.5 py-0.5 rounded;
+    font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-outline {
+    @apply inline-block border border-primary text-primary text-xs font-semibold px-2.5 py-0.5 rounded;
+    font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.04em;
+  }
+
+  /* Nav link */
+  .nav-link {
+    @apply text-muted-foreground hover:text-foreground transition-colors duration-200 text-sm font-medium;
+    font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.04em;
+    font-size: 0.95rem;
+  }
+
+  .nav-link-active {
+    @apply text-primary font-semibold;
+  }
+
+  /* Sidebar overlay */
+  .overlay {
+    @apply fixed inset-0 bg-black/60 z-40 backdrop-blur-sm;
+  }
+
+  /* Table-style row */
+  .table-row-hover {
+    @apply border-b border-border hover:bg-secondary/50 transition-colors;
+  }
+
+  /* Product tag */
+  .product-tag {
+    @apply text-xs font-medium text-muted-foreground bg-secondary px-2 py-0.5 rounded;
+    font-family: "Barlow Condensed", sans-serif;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .font-display {
+    font-family: "Bebas Neue", sans-serif;
+  }
+
+  .font-ui {
+    font-family: "Barlow Condensed", sans-serif;
+  }
+
+  .font-body {
+    font-family: "Barlow", sans-serif;
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeUp {
+    from {
+      transform: translateY(16px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-right {
+    animation: slideInRight 0.28s ease-out;
+  }
+
+  .animate-slide-left {
+    animation: slideInLeft 0.28s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.28s ease-out;
+  }
+
+  .animate-fade-up {
+    animation: fadeUp 0.4s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+}

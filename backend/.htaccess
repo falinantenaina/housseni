@@ -1,0 +1,27 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/c2794247c/ets-housseni"
+PassengerBaseURI "/"
+PassengerNodejs "/home/c2794247c/nodevenv/ets-housseni/22/bin/node"
+PassengerAppType node
+PassengerStartupFile index.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
+<IfModule Litespeed>
+SetEnv CLOUDINARY_CLIENT_API 955172964344219
+SetEnv CLOUDINARY_CLIENT_NAME dmearj5ux
+SetEnv CLOUDINARY_CLIENT_SECRET U-6WxStetueC2S2cFKmmJ7ex1Lk
+SetEnv COOKIE_EXPIRES_IN 30
+SetEnv DB_HOST localhost
+SetEnv DB_PASSWORD Nax@031096
+SetEnv JWT_EXPIRES_IN 30d
+SetEnv JWT_SECRET_KEY ca3e565ba2ca5ad4a9a8fe418208eaaf7f2caa12ca8819e2dcf2a615814862ea
+SetEnv PORT 5000
+SetEnv SMTP_HOST smtp.gmail.com
+SetEnv SMTP_MAIL nantenainaranaivojaona96@gmail.com
+SetEnv SMTP_PASSWORD vkoy idqf czet lgqr
+SetEnv SMTP_PORT 587
+SetEnv SMTP_SERVICE gmail
+SetEnv DB_NAME c2794247c_ets-housseni
+SetEnv DB_USER c2794247c_nantenaina
+</IfModule>
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
