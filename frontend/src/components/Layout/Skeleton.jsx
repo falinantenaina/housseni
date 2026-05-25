@@ -2,7 +2,7 @@ const Shimmer = ({ className }) => (
   <div className={`animate-pulse bg-secondary rounded-xl ${className}`} />
 );
 
-// ── Skeleton carte produit ────────────────────────────────────────────────────
+//  Skeleton carte produit
 const ProductCardSkeleton = () => (
   <div className="card-base rounded-2xl overflow-hidden flex flex-col">
     <Shimmer className="aspect-square w-full rounded-none" />
@@ -17,7 +17,7 @@ const ProductCardSkeleton = () => (
   </div>
 );
 
-// ── Skeleton grille de produits ───────────────────────────────────────────────
+//  Skeleton grille de produits
 export const ProductGridSkeleton = () => (
   <section className="py-10">
     <div className="flex items-end justify-between mb-6">
@@ -35,7 +35,7 @@ export const ProductGridSkeleton = () => (
   </section>
 );
 
-// ── Skeleton strip catégories ─────────────────────────────────────────────────
+//  Skeleton strip catégories
 export const CategoryStripSkeleton = () => (
   <section className="py-6 border-y border-border bg-secondary/30">
     <Shimmer className="h-3 w-24 mb-4" />

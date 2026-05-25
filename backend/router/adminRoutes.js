@@ -16,7 +16,7 @@ import {
 
 const router = express.Router();
 
-// ── Utilisateurs ──────────────────────────────────────────────
+//  Utilisateurs
 router.get(
   "/getallusers",
   isAuthenticated,
@@ -38,7 +38,7 @@ router.put(
   updateRole,
 );
 
-// ── Dashboard ─────────────────────────────────────────────────
+//  Dashboard
 router.get(
   "/fetch/dashboard-stats",
   isAuthenticated,
@@ -46,7 +46,7 @@ router.get(
   dashboardStats,
 );
 
-// ── Tarifs de livraison globaux ───────────────────────────────
+//  Tarifs de livraison globaux
 router.get(
   "/shipping-rates",
   isAuthenticated,
@@ -61,7 +61,7 @@ router.put(
   updateShippingRates,
 );
 
-// ── Livraison par commande ────────────────────────────────────
+//  Livraison par commande
 router.patch(
   "/orders/:orderId/delivery-zone",
   isAuthenticated,

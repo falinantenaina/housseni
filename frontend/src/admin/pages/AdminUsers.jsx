@@ -19,7 +19,7 @@ import {
 import AdminHeader from "../components/AdminHeader";
 import AdminLayout from "../components/AdminLayout";
 
-// ── Dialog de confirmation ─────────────────────────────────────────────────────
+//  Dialog de confirmation
 const ConfirmDialog = ({ open, title, desc, onConfirm, onCancel, danger }) => {
   if (!open) return null;
   return (
@@ -52,7 +52,7 @@ const ConfirmDialog = ({ open, title, desc, onConfirm, onCancel, danger }) => {
   );
 };
 
-// ── Page principale ────────────────────────────────────────────────────────────
+//  Page principale
 const AdminUsers = () => {
   const dispatch = useDispatch();
   const { users, totalUsers, loading } = useSelector((s) => s.admin);

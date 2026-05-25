@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { fetchActiveBanner } from "../../store/slices/bannerSlice";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+//  Helpers
 const CtaButton = ({ cta_url, cta_text, variant = "outline-white" }) => {
   const base =
     "mt-5 self-start font-ui font-bold text-sm px-5 py-2 rounded-full transition-colors";
@@ -40,7 +40,7 @@ const Badge = ({ badge_text }) => {
   );
 };
 
-// ── Layout 1 : promo_items ────────────────────────────────────────────────────
+//  Layout 1 : promo_items
 // Panneau coloré gauche + grille de produits droite (layout originel)
 const PromoItemsSlide = ({ banner }) => {
   const {
@@ -132,7 +132,7 @@ const PromoItemsSlide = ({ banner }) => {
   );
 };
 
-// ── Layout 2 : full_image ─────────────────────────────────────────────────────
+//  Layout 2 : full_image
 // Grande image pleine largeur, CTA optionnel en bas
 const FullImageSlide = ({ banner }) => {
   const { bg_image_url, title, cta_text, cta_url } = banner;
@@ -172,7 +172,7 @@ const FullImageSlide = ({ banner }) => {
   );
 };
 
-// ── Layout 3 : text_image ─────────────────────────────────────────────────────
+//  Layout 3 : text_image
 // Texte/CTA à gauche, image à droite (50/50)
 const TextImageSlide = ({ banner }) => {
   const {
@@ -229,7 +229,7 @@ const TextImageSlide = ({ banner }) => {
   );
 };
 
-// ── Layout 4 : image_text ─────────────────────────────────────────────────────
+//  Layout 4 : image_text
 // Image à gauche, texte/CTA à droite (50/50)
 const ImageTextSlide = ({ banner }) => {
   const {
@@ -286,7 +286,7 @@ const ImageTextSlide = ({ banner }) => {
   );
 };
 
-// ── Layout 5 : centered_text ──────────────────────────────────────────────────
+//  Layout 5 : centered_text
 // Grand texte centré, fond couleur ou image
 const CenteredTextSlide = ({ banner }) => {
   const {
@@ -342,7 +342,7 @@ const CenteredTextSlide = ({ banner }) => {
   );
 };
 
-// ── Layout 6 : image_overlay ──────────────────────────────────────────────────
+//  Layout 6 : image_overlay
 // Image de fond avec texte superposé à gauche
 const ImageOverlaySlide = ({ banner }) => {
   const {
@@ -397,7 +397,7 @@ const ImageOverlaySlide = ({ banner }) => {
   );
 };
 
-// ── Routeur de layout ─────────────────────────────────────────────────────────
+//  Routeur de layout
 const BannerSlide = ({ banner }) => {
   switch (banner.layout) {
     case "full_image":
@@ -416,7 +416,7 @@ const BannerSlide = ({ banner }) => {
   }
 };
 
-// ── Slider ────────────────────────────────────────────────────────────────────
+//  Slider
 const PromoBannerSlider = () => {
   const dispatch = useDispatch();
   const { activeBanners } = useSelector((s) => s.banner);

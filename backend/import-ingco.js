@@ -1,5 +1,5 @@
 // import-ingco.js
-// ─────────────────────────────────────────────────────────────
+//
 // Importe le fichier INGCO_TARIFS.xlsx vers MongoDB Atlas
 // - Upload les images vers Cloudinary
 // - CODE BAR → description du produit
@@ -7,7 +7,7 @@
 // - PRIX DE VENTE → price
 // - QTY → stock
 // Usage : node import-ingco.js
-// ─────────────────────────────────────────────────────────────
+//
 
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
@@ -16,20 +16,20 @@ import mongoose from "mongoose";
 
 dotenv.config();
 
-// ─── Config ──────────────────────────────────────────────────
+//  Config
 const XLSX_FILE = "./INGCO_TARIFS_MAI_2026__1_.xlsx";
 const SHEET_NAME = "PROSPECTUS";
 const IMAGES_DIR = "./ingco_images_temp"; // dossier temporaire pour les images extraites
 const BATCH_SIZE = 5; // nb d'uploads Cloudinary en parallèle
 
-// ─── Cloudinary ───────────────────────────────────────────────
+//  Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLIENT_NAME,
   api_key: process.env.CLOUDINARY_CLIENT_API,
   api_secret: process.env.CLOUDINARY_CLIENT_SECRET,
 });
 
-// ─── Couleurs console ─────────────────────────────────────────
+//  Couleurs console
 const log = {
   info: (t) => console.log(`\x1b[36m${t}\x1b[0m`),
   success: (t) => console.log(`\x1b[32m${t}\x1b[0m`),
@@ -39,7 +39,7 @@ const log = {
   dim: (t) => console.log(`\x1b[2m${t}\x1b[0m`),
 };
 
-// ─── Upload Cloudinary depuis Buffer ─────────────────────────
+//  Upload Cloudinary depuis Buffer
 function uploadBuffer(buffer, folder, publicId) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -50,7 +50,7 @@ function uploadBuffer(buffer, folder, publicId) {
   });
 }
 
-// ─── Lecture du fichier Excel ─────────────────────────────────
+//  Lecture du fichier Excel
 async function parseExcel() {
   // Import dynamique pour éviter les erreurs si pas installé
   let openpyxl;
@@ -118,7 +118,7 @@ print(json.dumps(products))
   }
 }
 
-// ─── Alternative : lecture directe via fichier temp Python ───
+//  Alternative : lecture directe via fichier temp Python
 async function parseExcelViaTempScript() {
   const { execSync } = await import("child_process");
 
@@ -183,7 +183,7 @@ print(json.dumps(products, ensure_ascii=False))
   return JSON.parse(output.toString());
 }
 
-// ─── Mongoose Product model (minimal) ────────────────────────
+//  Mongoose Product model (minimal)
 function getProductModel() {
   const schema = new mongoose.Schema(
     {
@@ -210,7 +210,7 @@ function getProductModel() {
   return mongoose.models.Product || mongoose.model("Product", schema);
 }
 
-// ─── Main ─────────────────────────────────────────────────────
+//  Main
 async function main() {
   log.bold("\n🚀 IMPORT INGCO XLSX → MongoDB Atlas\n");
 
@@ -227,7 +227,7 @@ async function main() {
     process.exit(1);
   }
 
-  // ── 1. Parse Excel ─────────────────────────────────────────
+  //  1. Parse Excel
   log.info("📊 Lecture du fichier Excel...");
   const products = await parseExcelViaTempScript();
   log.success(`✅ ${products.length} produits extraits du fichier Excel`);
@@ -236,14 +236,14 @@ async function main() {
   const withoutImage = products.length - withImage;
   log.dim(`   → ${withImage} avec image, ${withoutImage} sans image\n`);
 
-  // ── 2. Connexion MongoDB ────────────────────────────────────
+  //  2. Connexion MongoDB
   log.info("🔌 Connexion MongoDB Atlas...");
   await mongoose.connect(process.env.MONGO_URI);
   log.success("✅ MongoDB connecté.\n");
 
   const Product = getProductModel();
 
-  // ── 3. Upload images + insertion produits ──────────────────
+  //  3. Upload images + insertion produits
   log.bold("📦 Upload Cloudinary + insertion MongoDB\n");
 
   let inserted = 0,
@@ -297,7 +297,7 @@ async function main() {
     );
   }
 
-  // ── 4. Résumé ──────────────────────────────────────────────
+  //  4. Résumé
   console.log(); // newline après le counter
   log.bold("\n📊 RÉSUMÉ\n");
   log.success(`  ✅ Produits insérés    : ${inserted}`);

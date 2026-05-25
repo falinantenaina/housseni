@@ -24,7 +24,7 @@ import {
 import AdminHeader from "../components/AdminHeader";
 import AdminLayout from "../components/AdminLayout";
 
-// ── Définition des layouts ────────────────────────────────────────────────────
+//  Définition des layouts
 const LAYOUTS = [
   {
     id: "promo_items",
@@ -325,7 +325,7 @@ const LAYOUTS = [
 
 const getLayoutMeta = (id) => LAYOUTS.find((l) => l.id === id) || LAYOUTS[0];
 
-// ── Sélecteur de layout ───────────────────────────────────────────────────────
+//  Sélecteur de layout
 const LayoutPicker = ({ value, onChange }) => (
   <div>
     <p className="font-ui text-xs text-muted-foreground tracking-widest uppercase mb-3 flex items-center gap-2">
@@ -364,7 +364,7 @@ const LayoutPicker = ({ value, onChange }) => (
   </div>
 );
 
-// ── Upload image principale ───────────────────────────────────────────────────
+//  Upload image principale
 const BgImageUpload = ({
   preview,
   onChange,
@@ -410,7 +410,7 @@ const BgImageUpload = ({
   );
 };
 
-// ── Aperçu miniature ──────────────────────────────────────────────────────────
+//  Aperçu miniature
 const BannerPreviewMini = ({ banner }) => {
   const layout = banner.layout || "promo_items";
   const {
@@ -617,7 +617,7 @@ const BannerPreviewMini = ({ banner }) => {
   );
 };
 
-// ── Item formulaire (pour promo_items) ────────────────────────────────────────
+//  Item formulaire (pour promo_items)
 const ItemForm = ({ item, index, onChange, onRemove, totalItems }) => {
   const fileRef = useRef();
   const [preview, setPreview] = useState(item.image_url || null);
@@ -750,7 +750,7 @@ const ItemForm = ({ item, index, onChange, onRemove, totalItems }) => {
   );
 };
 
-// ── Formulaire de création ────────────────────────────────────────────────────
+//  Formulaire de création
 const CreateForm = ({ onClose }) => {
   const dispatch = useDispatch();
   const { loading } = useSelector((s) => s.banner);
@@ -1152,7 +1152,7 @@ const CreateForm = ({ onClose }) => {
   );
 };
 
-// ── Carte bannière ────────────────────────────────────────────────────────────
+//  Carte bannière
 const BannerCard = ({ banner }) => {
   const dispatch = useDispatch();
   const [expanded, setExpanded] = useState(false);
@@ -1325,7 +1325,7 @@ const BannerCard = ({ banner }) => {
   );
 };
 
-// ── Page principale ───────────────────────────────────────────────────────────
+//  Page principale
 const AdminBanners = () => {
   const dispatch = useDispatch();
   const { banners, loading } = useSelector((s) => s.banner);

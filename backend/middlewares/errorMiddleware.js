@@ -11,7 +11,7 @@ export const errorMiddleware = (err, req, res, next) => {
   err.message = err.message || "Internal Server Error";
   err.statusCode = err.statusCode || 500;
 
-  // ── Erreurs Sequelize ──────────────────────────────────────
+  //  Erreurs Sequelize
 
   // Contrainte unique violée (ex : email déjà utilisé)
   if (err.name === "SequelizeUniqueConstraintError") {
@@ -49,7 +49,7 @@ export const errorMiddleware = (err, req, res, next) => {
     err = new ErrorHandler(`Erreur de base de données : ${err.message}`, 400);
   }
 
-  // ── Erreurs JWT ────────────────────────────────────────────
+  //  Erreurs JWT
 
   if (err.name === "JsonWebTokenError") {
     err = new ErrorHandler(
@@ -65,7 +65,7 @@ export const errorMiddleware = (err, req, res, next) => {
     );
   }
 
-  // ── Erreur de cast (héritage MongoDB — peu probable mais inoffensif) ──
+  //  Erreur de cast (héritage MongoDB — peu probable mais inoffensif)
   if (err.name === "CastError") {
     err = new ErrorHandler(`Valeur invalide pour le champ ${err.path}.`, 400);
   }

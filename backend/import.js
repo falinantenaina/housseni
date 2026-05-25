@@ -1,7 +1,7 @@
 // import.js — ETS Housseni
-// ─────────────────────────────────────────────────────────────
+//
 // Usage : node import.js
-// ─────────────────────────────────────────────────────────────
+//
 
 import dotenv from "dotenv";
 import fs from "fs";
@@ -10,7 +10,7 @@ import { config } from "./import.config.js";
 
 dotenv.config();
 
-// ─── Couleurs console ─────────────────────────────────────────
+//  Couleurs console
 const log = {
   info: (t) => console.log(`\x1b[36m${t}\x1b[0m`),
   success: (t) => console.log(`\x1b[32m${t}\x1b[0m`),
@@ -20,7 +20,7 @@ const log = {
   dim: (t) => console.log(`\x1b[2m${t}\x1b[0m`),
 };
 
-// ─── Parse le JSON phpMyAdmin ─────────────────────────────────
+//  Parse le JSON phpMyAdmin
 function parseJSON(filePath) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`Fichier introuvable : ${filePath}`);
@@ -41,7 +41,7 @@ function parseJSON(filePath) {
   return tables;
 }
 
-// ─── Étape 1 : Insertion ──────────────────────────────────────
+//  Étape 1 : Insertion
 async function insertData(db, tables) {
   log.bold("\n📦 ÉTAPE 1 — Insertion des données\n");
 
@@ -71,7 +71,7 @@ async function insertData(db, tables) {
   }
 }
 
-// ─── Étape 2 : Relations UUID → ObjectId ─────────────────────
+//  Étape 2 : Relations UUID → ObjectId
 async function resolveRelations(db) {
   log.bold("\n🔗 ÉTAPE 2 — Résolution des relations\n");
 
@@ -120,7 +120,7 @@ async function resolveRelations(db) {
   }
 }
 
-// ─── Étape 3 : Nettoyage mysqlUUID ───────────────────────────
+//  Étape 3 : Nettoyage mysqlUUID
 async function cleanup(db) {
   log.bold("\n🧹 ÉTAPE 3 — Suppression des champs mysqlUUID\n");
 
@@ -135,7 +135,7 @@ async function cleanup(db) {
   }
 }
 
-// ─── Résumé ───────────────────────────────────────────────────
+//  Résumé
 async function summary(db) {
   log.bold("\n📊 RÉSUMÉ FINAL\n");
   for (const { mongoCollection } of config.tables) {
@@ -147,7 +147,7 @@ async function summary(db) {
   }
 }
 
-// ─── Main ─────────────────────────────────────────────────────
+//  Main
 async function main() {
   log.bold("\n🚀 IMPORT ETS Housseni → MongoDB Atlas\n");
 

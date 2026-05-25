@@ -21,7 +21,7 @@ import { toast } from "react-toastify";
 import { axiosInstance } from "../lib/axios";
 import { saveShippingInfo, updateProfile } from "../store/slices/authSlice";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+//  Helpers
 const Field = ({ label, icon: Icon, children }) => (
   <div>
     <label className="font-ui text-xs text-muted-foreground tracking-widest uppercase block mb-1.5">
@@ -36,7 +36,7 @@ const Field = ({ label, icon: Icon, children }) => (
   </div>
 );
 
-// ─── Onglet Informations personnelles ─────────────────────────────────────────
+//  Onglet Informations personnelles
 const ProfileInfoTab = ({ authUser }) => {
   const dispatch = useDispatch();
   const { isUpdatingProfile } = useSelector((s) => s.auth);
@@ -175,7 +175,7 @@ const ProfileInfoTab = ({ authUser }) => {
   );
 };
 
-// ─── Onglet Adresse de livraison ──────────────────────────────────────────────
+//  Onglet Adresse de livraison
 const ShippingTab = ({ authUser }) => {
   const dispatch = useDispatch();
   const { isSavingShippingInfo } = useSelector((s) => s.auth);
@@ -363,7 +363,7 @@ const ShippingTab = ({ authUser }) => {
   );
 };
 
-// ─── Onglet Mot de passe ──────────────────────────────────────────────────────
+//  Onglet Mot de passe
 const PasswordField = ({
   label,
   field,
@@ -548,7 +548,7 @@ const PasswordTab = () => {
   );
 };
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+//  Page principale
 const TABS = [
   { id: "info", label: "Informations", icon: User },
   { id: "shipping", label: "Mon adresse", icon: MapPin },
@@ -583,7 +583,7 @@ const Profile = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* ── Sidebar ──────────────────────────────────────────────── */}
+          {/*  Sidebar  */}
           <aside className="lg:col-span-1">
             <div className="card-base p-5 space-y-1">
               {/* Avatar mini */}
@@ -639,7 +639,7 @@ const Profile = () => {
             </div>
           </aside>
 
-          {/* ── Contenu ───────────────────────────────────────────────── */}
+          {/*  Contenu  */}
           <div className="lg:col-span-3">
             <div className="card-base p-6">
               {/* Titre de section */}

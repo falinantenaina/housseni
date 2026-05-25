@@ -115,7 +115,7 @@ export const deleteAdminOrder = createAsyncThunk(
   },
 );
 
-// ─── LIVRAISON ────────────────────────────────────────────────────────────────
+//  LIVRAISON
 
 /**
  * Récupère les tarifs de livraison actuels depuis le backend.
@@ -348,7 +348,7 @@ export const deleteAdminCategory = createAsyncThunk(
   },
 );
 
-// ─── Slice ────────────────────────────────────────────────────────────────────
+//  Slice
 
 // Tarifs par défaut affichés côté client avant chargement depuis le backend
 export const DEFAULT_SHIPPING_RATES = {

@@ -1,5 +1,5 @@
 // import.config.js — ETS Housseni
-// ─────────────────────────────────────────────────────────────
+//
 import dotenv from "dotenv";
 dotenv.config();
 export const config = {
@@ -111,7 +111,7 @@ export const config = {
     },
   ],
 
-  // ── Relations : UUID MySQL → ObjectId MongoDB ─────────────
+  //  Relations : UUID MySQL → ObjectId MongoDB
   relations: [
     {
       collection: "products",

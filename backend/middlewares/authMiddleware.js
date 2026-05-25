@@ -20,7 +20,6 @@ export const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
 
   // findByPk remplace findById (Sequelize)
   const user = await User.findByPk(decoded.id);
-  console.log(user);
 
   if (!user) {
     return next(new ErrorHandler("Utilisateur introuvable.", 404));

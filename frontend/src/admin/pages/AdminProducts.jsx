@@ -27,7 +27,7 @@ import {
 import AdminHeader from "../components/AdminHeader";
 import AdminLayout from "../components/AdminLayout";
 
-// ── Create Modal ──────────────────────────────────────────────────────────────
+//  Create Modal
 const CreateModal = ({ categories }) => {
   const dispatch = useDispatch();
   const { loading } = useSelector((s) => s.admin);
@@ -250,7 +250,7 @@ const CreateModal = ({ categories }) => {
   );
 };
 
-// ── Update Modal ──────────────────────────────────────────────────────────────
+//  Update Modal
 const UpdateModal = ({ product, categories }) => {
   const dispatch = useDispatch();
   const { loading } = useSelector((s) => s.admin);
@@ -476,7 +476,7 @@ const UpdateModal = ({ product, categories }) => {
   );
 };
 
-// ── View Modal ────────────────────────────────────────────────────────────────
+//  View Modal
 const ViewModal = ({ product }) => {
   const dispatch = useDispatch();
   const [activeImg, setActiveImg] = useState(0);
@@ -560,7 +560,7 @@ const ViewModal = ({ product }) => {
   );
 };
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
+//  Main Page
 const AdminProducts = () => {
   const dispatch = useDispatch();
   const {

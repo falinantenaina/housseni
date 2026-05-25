@@ -18,7 +18,7 @@ import {
   fetchTopRated,
 } from "../store/slices/productSlice";
 
-// ── Carte produit ─────────────────────────────────────────────────────────────
+//  Carte produit
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
   const imgUrl = product.images?.[0]?.url || product.image;
@@ -164,7 +164,7 @@ const CategoryStrip = ({ categories, loading }) => {
   );
 };
 
-// ── Page principale ───────────────────────────────────────────────────────────
+//  Page principale
 const Index = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);

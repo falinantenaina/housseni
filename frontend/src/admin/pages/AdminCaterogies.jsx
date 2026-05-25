@@ -21,7 +21,7 @@ import {
 import AdminHeader from "../components/AdminHeader";
 import AdminLayout from "../components/AdminLayout";
 
-// ── Create Category Modal ─────────────────────────────────────────────────────
+//  Create Category Modal
 const CreateCategoryModal = () => {
   const dispatch = useDispatch();
   const { loading } = useSelector((s) => s.admin);
@@ -146,7 +146,7 @@ const CreateCategoryModal = () => {
   );
 };
 
-// ── Update Category Modal ─────────────────────────────────────────────────────
+//  Update Category Modal
 const UpdateCategoryModal = ({ category }) => {
   const dispatch = useDispatch();
   const { loading } = useSelector((s) => s.admin);
@@ -295,7 +295,7 @@ const UpdateCategoryModal = ({ category }) => {
   );
 };
 
-// ── Main Page ──────────────────────────────────────────────────────────────────
+//  Main Page
 const AdminCategories = () => {
   const dispatch = useDispatch();
   const {

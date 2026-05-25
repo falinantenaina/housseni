@@ -201,7 +201,7 @@ const Payment = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* ── Formulaire ───────────────────────────────────────────── */}
+          {/*  Formulaire  */}
           <div className="lg:col-span-3">
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Infos personnelles */}
@@ -352,7 +352,7 @@ const Payment = () => {
             </form>
           </div>
 
-          {/* ── Résumé commande ───────────────────────────────────────── */}
+          {/*  Résumé commande  */}
           <div className="lg:col-span-2">
             <div className="card-base p-5 sticky top-24">
               <h2 className="font-ui font-bold text-foreground tracking-widest uppercase text-sm mb-4 pb-3 border-b border-border flex items-center gap-2">

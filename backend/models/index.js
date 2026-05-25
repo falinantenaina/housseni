@@ -1,10 +1,24 @@
+/**
+ * models/index.js
+ *
+ * Point d'entrée unique pour tous les modèles.
+ *
+ * Champs JSONB notables :
+ *   - User.avatar          → { public_id, url }
+ *   - User.shipping_info   → { phone, address, city, state, country, pincode }
+ *   - Product.images       → [{ url, public_id }, ...]
+ *   - Order.shipping_info  → { full_name, state, city, country, address, pincode, phone }
+ *   - Category.image       → { public_id, url }
+ *   - Notification.payload → { buyer, total_price, delivery_zone, items_count, ... }
+ */
+
 import Category from "./Category.js";
+import Notification from "./Notification.js";
 import Order from "./Order.js";
 import OrderItem from "./OrderItem.js";
 import Product from "./Product.js";
 import PromotionalBanner from "./PromotionalBanner.js";
 import PromotionalBannerItem from "./promotionalBannerItems.js";
-
 import Review from "./Review.js";
 import User from "./User.js";
 
@@ -52,11 +66,20 @@ PromotionalBannerItem.belongsTo(PromotionalBanner, { foreignKey: "banner_id" });
 PromotionalBannerItem.belongsTo(Product, {
   foreignKey: "product_id",
   as: "product",
-  constraints: false, // product_id est nullable
+  constraints: false,
 });
+
+//  Notification ↔ Order
+Notification.belongsTo(Order, {
+  foreignKey: "order_id",
+  as: "order",
+  onDelete: "CASCADE",
+});
+Order.hasMany(Notification, { foreignKey: "order_id", as: "notifications" });
 
 export {
   Category,
+  Notification,
   Order,
   OrderItem,
   Product,

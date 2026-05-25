@@ -3,21 +3,17 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import fileUpload from "express-fileupload";
-import path from "path";
-import { fileURLToPath } from "url";
 import { connectDB } from "./database/db.js";
 import { errorMiddleware } from "./middlewares/errorMiddleware.js";
 import adminRouter from "./router/adminRoutes.js";
 import authRouter from "./router/authRoutes.js";
 import bannerRouter from "./router/bannerRoutes.js";
 import categoryRouter from "./router/categoryRoutes.js";
+import notificationRouter from "./router/notificationRoutes.js";
 import orderRouter from "./router/orderRoutes.js";
 import productRouter from "./router/productRoutes.js";
 
 dotenv.config();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -52,22 +48,13 @@ app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/banners", bannerRouter);
+app.use("/api/v1/notifications", notificationRouter);
 
 app.get("/api", (req, res) => {
   res.send("API WORKING");
 });
 
 connectDB();
-
-// Servir le frontend en production
-console.log(process.env.NODE_ENV);
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "./frontend/dist")));
-
-  app.get("/{*path}", (req, res) => {
-    res.sendFile(path.join(__dirname, "./frontend/dist", "index.html"));
-  });
-}
 
 app.use(errorMiddleware);
 

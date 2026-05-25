@@ -188,7 +188,7 @@ const printProforma = (order, orderItems = []) => {
   }
 };
 
-// ─── Panneau livraison dans le détail d'une commande ─────────────────────────
+//  Panneau livraison dans le détail d'une commande
 const ShippingPanel = ({ order }) => {
   const dispatch = useDispatch();
   const { shippingRates } = useSelector((s) => s.admin);
@@ -298,7 +298,7 @@ const ShippingPanel = ({ order }) => {
   );
 };
 
-// ─── Panneau tarifs globaux ───────────────────────────────────────────────────
+//  Panneau tarifs globaux
 const ShippingRatesPanel = () => {
   const dispatch = useDispatch();
   const { shippingRates } = useSelector((s) => s.admin);
@@ -365,7 +365,7 @@ const ShippingRatesPanel = () => {
   );
 };
 
-// ─── Ligne commande ───────────────────────────────────────────────────────────
+//  Ligne commande
 const OrderRow = ({ order, onDelete }) => {
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
@@ -625,7 +625,7 @@ const OrderRow = ({ order, onDelete }) => {
   );
 };
 
-// ─── Page principale ──────────────────────────────────────────────────────────
+//  Page principale
 const AdminOrders = () => {
   const dispatch = useDispatch();
   const { orders, loading } = useSelector((s) => s.admin);
