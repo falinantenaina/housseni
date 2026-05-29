@@ -1,6 +1,15 @@
 import nodeMailer from "nodemailer";
 
-export const sendEmail = async ({ email, subject, message }) => {
+/**
+ * Envoie un e-mail HTML.
+ *
+ * @param {object} params
+ * @param {string}          params.email   - Destinataire principal
+ * @param {string|string[]} [params.cc]    - Copie conforme (optionnel)
+ * @param {string}          params.subject - Objet du message
+ * @param {string}          params.message - Corps HTML du message
+ */
+export const sendEmail = async ({ email, cc, subject, message }) => {
   const transporter = nodeMailer.createTransport({
     host: process.env.SMTP_HOST,
     service: process.env.SMTP_SERVICE,
@@ -16,6 +25,7 @@ export const sendEmail = async ({ email, subject, message }) => {
     to: email,
     subject,
     html: message,
+    ...(cc ? { cc } : {}),
   };
 
   await transporter.sendMail(mailOptions);

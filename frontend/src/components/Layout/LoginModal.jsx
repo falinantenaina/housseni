@@ -1,6 +1,7 @@
 import { Eye, EyeOff, Lock, Mail, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { login, signup } from "../../store/slices/authSlice";
 import { closeAuthPopup } from "../../store/slices/popupSlice";
 
@@ -34,6 +35,10 @@ const LoginModal = () => {
         if (!res.error) dispatch(closeAuthPopup());
       });
     }
+  };
+
+  const handleForgotPasswordClick = () => {
+    dispatch(closeAuthPopup());
   };
 
   if (!isAuthPopupOpen) return null;
@@ -113,6 +118,19 @@ const LoginModal = () => {
                 )}
               </button>
             </div>
+
+            {/* Lien mot de passe oublié (mode login uniquement) */}
+            {mode === "login" && (
+              <div className="text-right">
+                <Link
+                  to="/password/forgot"
+                  onClick={handleForgotPasswordClick}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors font-ui tracking-wide"
+                >
+                  Mot de passe oublié ?
+                </Link>
+              </div>
+            )}
 
             <button
               type="submit"

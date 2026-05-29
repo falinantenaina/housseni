@@ -29,16 +29,10 @@ const User = sequelize.define(
       defaultValue: "User",
       validate: { isIn: [["User", "Admin"]] },
     },
-    // { public_id, url } — stocké en JSONB
     avatar: {
       type: DataTypes.JSONB,
       defaultValue: null,
     },
-    /**
-     * Informations de livraison sauvegardées du client.
-     * Structure : { phone, address, city, state, country, pincode }
-     * Pré-remplies automatiquement dans le formulaire de commande.
-     */
     shipping_info: {
       type: DataTypes.JSONB,
       defaultValue: null,
@@ -48,6 +42,19 @@ const User = sequelize.define(
       defaultValue: null,
     },
     reset_password_expire: {
+      type: DataTypes.DATE,
+      defaultValue: null,
+    },
+    //  Email verification
+    email_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    email_verify_token: {
+      type: DataTypes.STRING(255),
+      defaultValue: null,
+    },
+    email_verify_expire: {
       type: DataTypes.DATE,
       defaultValue: null,
     },

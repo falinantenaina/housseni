@@ -8,6 +8,8 @@ import {
   User,
 } from "../models/index.js";
 import { getIO } from "../socket.js";
+import { generateOrderConfirmationTemplate } from "../utils/generateOrderConfirmationTemplate.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 export const SHIPPING_RATES = {
   ville: 50,
@@ -66,6 +68,7 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
   if (!items?.length)
     return next(new ErrorHandler("Aucun article dans le panier.", 400));
 
+  // Valider les produits et calculer le total
   const productIds = items.map((i) => i.product.id);
   const dbProducts = await Product.findAll({
     where: { id: productIds },
@@ -102,18 +105,20 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
   const zone = delivery_zone || null;
   const shipping_price = zone ? (SHIPPING_RATES[zone] ?? 0) : 0;
 
-  //  Créer la commande
+  const shippingInfo = {
+    full_name,
+    state: state || null,
+    city,
+    country,
+    address,
+    pincode,
+    phone,
+  };
+
+  // Créer la commande
   const order = await Order.create({
     buyer_id: req.user.id,
-    shipping_info: {
-      full_name,
-      state: state || null,
-      city,
-      country,
-      address,
-      pincode,
-      phone,
-    },
+    shipping_info: shippingInfo,
     total_price,
     tax_price: 0,
     shipping_price,
@@ -124,7 +129,7 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
     orderItemsData.map((item) => ({ ...item, order_id: order.id })),
   );
 
-  //  Auto-sauvegarder shipping_info sur le profil
+  // Auto-sauvegarder shipping_info sur le profil
   try {
     const buyer = await User.findByPk(req.user.id);
     const current = buyer.shipping_info || {};
@@ -143,7 +148,34 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
     console.warn("shipping_info non sauvegardé :", err.message);
   }
 
-  //  Payload de notification
+  //  E-mail de confirmation de commande
+  // Envoyé au client + CC herketk@yahoo.fr (best-effort, ne bloque pas la réponse)
+  try {
+    const emailMessage = generateOrderConfirmationTemplate({
+      name: req.user.name,
+      orderId: order.id,
+      items: orderItemsData,
+      total_price,
+      shipping_price,
+      delivery_zone: zone,
+      shippingInfo,
+    });
+
+    await sendEmail({
+      email: req.user.email,
+      cc: "herketk@yahoo.fr",
+      subject: `Confirmation de commande #${order.id.slice(-8).toUpperCase()} — ETS HOUSSENI`,
+      message: emailMessage,
+    });
+  } catch (err) {
+    console.warn(
+      "[placeNewOrder] E-mail de confirmation non envoyé :",
+      err.message,
+    );
+  }
+  //
+
+  // Payload de notification
   const notifPayload = {
     buyer: { name: req.user.name, email: req.user.email },
     total_price,
@@ -152,9 +184,7 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
     items_count: orderItemsData.length,
   };
 
-  //  Persister la notification en base
-  // Même si l'admin est hors ligne, la notification sera disponible
-  // au prochain chargement du panel.
+  // Persister la notification
   let savedNotif = null;
   try {
     savedNotif = await Notification.create({
@@ -167,7 +197,7 @@ export const placeNewOrder = catchAsyncErrors(async (req, res, next) => {
     console.warn("[Notification] Impossible de persister :", err.message);
   }
 
-  //  Émettre en temps réel si des admins sont connectés
+  // Émettre en temps réel
   try {
     getIO()
       .to("admins")

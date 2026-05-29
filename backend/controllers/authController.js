@@ -5,14 +5,19 @@ import { connectDB } from "../database/db.js";
 import { catchAsyncErrors } from "../middlewares/catchAsyncError.js";
 import ErrorHandler from "../middlewares/errorMiddleware.js";
 import User from "../models/User.js";
+import { generateEmailVerificationTemplate } from "../utils/generateEmailVerificationTemplate.js";
 import { generateEmailTemplate } from "../utils/generateForgotPasswordEmailTemplate.js";
 import { generateResetPasswordToken } from "../utils/generateResetPasswordToken.js";
+import { generateVerifyEmailToken } from "../utils/generateVerifyEmailToken.js";
 import { sendToken } from "../utils/jwtToken.js";
 import { sendEmail } from "../utils/sendEmail.js";
+
+//  Inscription
 
 export const register = catchAsyncErrors(async (req, res, next) => {
   await connectDB();
   const { name, email, password } = req.body;
+  const { frontendUrl } = req.query;
 
   if (!name || !email || !password) {
     return next(
@@ -28,11 +33,7 @@ export const register = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const existing = await User.findOne({
-    where: {
-      email,
-    },
-  });
+  const existing = await User.findOne({ where: { email } });
   if (existing) {
     return next(
       new ErrorHandler(
@@ -43,14 +44,135 @@ export const register = catchAsyncErrors(async (req, res, next) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await User.create({ name, email, password: hashedPassword });
-  sendToken(user, 201, "User registered successfully", res);
+
+  // Générer le token de vérification
+  const { verifyToken, hashedToken, verifyExpireTime } =
+    generateVerifyEmailToken();
+
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    email_verified: false,
+    email_verify_token: hashedToken,
+    email_verify_expire: new Date(verifyExpireTime),
+  });
+
+  // Envoyer l'email de vérification (best-effort : ne bloque pas l'inscription)
+  try {
+    const baseUrl =
+      frontendUrl || process.env.FRONTEND_URL || "https://ets-housseni.com";
+    const verifyUrl = `${baseUrl}/email/verify/${verifyToken}`;
+    const message = generateEmailVerificationTemplate(verifyUrl, name);
+
+    await sendEmail({
+      email: user.email,
+      subject: "Confirmez votre adresse e-mail — ETS HOUSSENI",
+      message,
+    });
+  } catch (err) {
+    console.warn("[register] Email de vérification non envoyé :", err.message);
+    // On ne supprime PAS le token en base : l'utilisateur pourra renvoyer depuis son profil
+  }
+
+  sendToken(user, 201, "Compte créé avec succès.", res);
 });
+
+//  Vérification de l'e-mail
+
+export const verifyEmail = catchAsyncErrors(async (req, res, next) => {
+  await connectDB();
+  const { token } = req.params;
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    where: {
+      email_verify_token: hashedToken,
+    },
+  });
+
+  if (!user) {
+    return next(
+      new ErrorHandler("Lien de vérification invalide ou expiré.", 400),
+    );
+  }
+
+  // Vérifier l'expiration
+  if (new Date(user.email_verify_expire) < new Date()) {
+    return next(
+      new ErrorHandler(
+        "Ce lien de vérification a expiré. Veuillez en demander un nouveau.",
+        400,
+      ),
+    );
+  }
+
+  await user.update({
+    email_verified: true,
+    email_verify_token: null,
+    email_verify_expire: null,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Adresse e-mail vérifiée avec succès.",
+  });
+});
+
+//  Renvoi du lien de vérification
+
+export const resendVerificationEmail = catchAsyncErrors(
+  async (req, res, next) => {
+    await connectDB();
+    const { frontendUrl } = req.query;
+
+    const user = await User.findByPk(req.user.id);
+    if (!user) {
+      return next(new ErrorHandler("Utilisateur introuvable.", 404));
+    }
+    if (user.email_verified) {
+      return next(
+        new ErrorHandler("Votre adresse e-mail est déjà vérifiée.", 400),
+      );
+    }
+
+    const { verifyToken, hashedToken, verifyExpireTime } =
+      generateVerifyEmailToken();
+
+    await user.update({
+      email_verify_token: hashedToken,
+      email_verify_expire: new Date(verifyExpireTime),
+    });
+
+    const baseUrl =
+      frontendUrl || process.env.FRONTEND_URL || "https://ets-housseni.com";
+    const verifyUrl = `${baseUrl}/email/verify/${verifyToken}`;
+    const message = generateEmailVerificationTemplate(verifyUrl, user.name);
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Confirmez votre adresse e-mail — ETS HOUSSENI",
+        message,
+      });
+      res.status(200).json({
+        success: true,
+        message: `Un nouvel e-mail de confirmation a été envoyé à ${user.email}.`,
+      });
+    } catch (err) {
+      console.error(err);
+      return next(new ErrorHandler("Impossible d'envoyer l'e-mail.", 500));
+    }
+  },
+);
+
+//  Connexion
 
 export const login = catchAsyncErrors(async (req, res, next) => {
   await connectDB();
   const { email, password } = req.body;
-  console.log(email);
+
   if (!email || !password) {
     return next(
       new ErrorHandler(
@@ -74,11 +196,12 @@ export const login = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  sendToken(user, 200, "Logged In.", res);
+  sendToken(user, 200, "Connexion réussie.", res);
 });
 
+//  Profil
+
 export const getUser = catchAsyncErrors(async (req, res, next) => {
-  // shipping_info est inclus automatiquement via le modèle
   res.status(200).json({ success: true, user: req.user });
 });
 
@@ -89,12 +212,14 @@ export const logout = catchAsyncErrors(async (req, res, next) => {
     .json({ success: true, message: "Déconnexion réussie." });
 });
 
+//  Mot de passe oublié
+
 export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
   await connectDB();
   const { email } = req.body;
   const { frontendUrl } = req.query;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ where: { email } });
   if (!user) {
     return next(
       new ErrorHandler(
@@ -106,31 +231,36 @@ export const forgotPassword = catchAsyncErrors(async (req, res, next) => {
 
   const { hashedToken, resetPasswordExpireTime, resetToken } =
     generateResetPasswordToken();
+
   user.reset_password_token = hashedToken;
   user.reset_password_expire = new Date(resetPasswordExpireTime);
   await user.save();
 
-  const resetPasswordUrl = `${frontendUrl}/password/reset/${resetToken}`;
+  const baseUrl =
+    frontendUrl || process.env.FRONTEND_URL || "https://ets-housseni.com";
+  const resetPasswordUrl = `${baseUrl}/password/reset/${resetToken}`;
   const message = generateEmailTemplate(resetPasswordUrl);
 
   try {
     await sendEmail({
       email: user.email,
-      subject: "Password Recovery",
+      subject: "Réinitialisation de votre mot de passe — ETS HOUSSENI",
       message,
     });
     res.status(200).json({
       success: true,
-      message: `Courriel envoyé avec succès à ${user.email}.`,
+      message: `E-mail envoyé avec succès à ${user.email}.`,
     });
   } catch (error) {
     console.error(error);
     user.reset_password_token = null;
     user.reset_password_expire = null;
     await user.save();
-    return next(new ErrorHandler("Le courrier n'a pas pu être envoyé.", 500));
+    return next(new ErrorHandler("L'e-mail n'a pas pu être envoyé.", 500));
   }
 });
+
+//  Réinitialisation du mot de passe
 
 export const resetPassword = catchAsyncErrors(async (req, res, next) => {
   await connectDB();
@@ -141,24 +271,25 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
     .digest("hex");
 
   const user = await User.findOne({
-    reset_password_token: resetPasswordToken,
-    reset_password_expire: { $gt: Date.now() },
+    where: {
+      reset_password_token: resetPasswordToken,
+    },
   });
 
   if (!user) {
-    return next(new ErrorHandler("Token invalide ou expiré.", 400));
+    return next(new ErrorHandler("Token invalide.", 400));
   }
+
+  if (new Date(user.reset_password_expire) < new Date()) {
+    return next(new ErrorHandler("Ce lien de réinitialisation a expiré.", 400));
+  }
+
   if (req.body.password !== req.body.confirmPassword) {
     return next(
       new ErrorHandler("Les mots de passe ne correspondent pas.", 400),
     );
   }
-  if (
-    req.body.password?.length < 8 ||
-    req.body.password?.length > 16 ||
-    req.body.confirmPassword?.length < 8 ||
-    req.body.confirmPassword?.length > 16
-  ) {
+  if (req.body.password?.length < 8 || req.body.password?.length > 16) {
     return next(
       new ErrorHandler(
         "Le mot de passe doit comporter entre 8 et 16 caractères.",
@@ -171,8 +302,11 @@ export const resetPassword = catchAsyncErrors(async (req, res, next) => {
   user.reset_password_token = null;
   user.reset_password_expire = null;
   await user.save();
-  sendToken(user, 200, "Réinitialisation du mot de passe réussie", res);
+
+  sendToken(user, 200, "Mot de passe réinitialisé avec succès.", res);
 });
+
+//  Mise à jour du mot de passe (connecté)
 
 export const updatePassword = catchAsyncErrors(async (req, res, next) => {
   await connectDB();
@@ -205,7 +339,7 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
     );
   }
 
-  const user = await User.findById(req.user._id);
+  const user = await User.findByPk(req.user.id);
   user.password = await bcrypt.hash(newPassword, 10);
   await user.save();
 
@@ -214,17 +348,14 @@ export const updatePassword = catchAsyncErrors(async (req, res, next) => {
     .json({ success: true, message: "Mot de passe mis à jour avec succès." });
 });
 
+//  Mise à jour du profil
+
 export const updateProfile = catchAsyncErrors(async (req, res, next) => {
   await connectDB();
   const { name, email } = req.body;
   if (!name || !email) {
     return next(
       new ErrorHandler("Veuillez remplir tous les champs obligatoires.", 400),
-    );
-  }
-  if (name.trim().length === 0 || email.trim().length === 0) {
-    return next(
-      new ErrorHandler("Le nom et l'email ne peuvent pas être vides.", 400),
     );
   }
 
@@ -237,11 +368,7 @@ export const updateProfile = catchAsyncErrors(async (req, res, next) => {
     }
     const newProfileImage = await cloudinary.uploader.upload(
       avatar.tempFilePath,
-      {
-        folder: "Ecommerce_Avatars",
-        width: 150,
-        crop: "scale",
-      },
+      { folder: "Ecommerce_Avatars", width: 150, crop: "scale" },
     );
     updateData.avatar = {
       public_id: newProfileImage.public_id,
@@ -249,20 +376,19 @@ export const updateProfile = catchAsyncErrors(async (req, res, next) => {
     };
   }
 
-  const user = await User.findByIdAndUpdate(req.user._id, updateData, {
-    new: true,
-    runValidators: true,
-  });
+  const user = await User.findByPk(req.user.id);
+  await user.update(updateData);
 
   res
     .status(200)
     .json({ success: true, message: "Profil mis à jour avec succès.", user });
 });
 
+//  Sauvegarde des infos de livraison
+
 export const saveShippingInfo = catchAsyncErrors(async (req, res, next) => {
   const { phone, address, city, state, country, pincode } = req.body;
 
-  // Vérifier qu'au moins un champ est fourni
   if (
     phone === undefined &&
     address === undefined &&
@@ -280,8 +406,6 @@ export const saveShippingInfo = catchAsyncErrors(async (req, res, next) => {
   }
 
   const user = await User.findByPk(req.user.id);
-
-  // Fusionner avec les données existantes (mise à jour partielle)
   const current = user.shipping_info || {};
 
   const updated = {
