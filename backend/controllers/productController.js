@@ -170,8 +170,6 @@ export const updateProduct = catchAsyncErrors(async (req, res, next) => {
 
   let uploadedImages = oldProduct.images;
 
-  console.log(req.files);
-
   if (req.files && req.files.images) {
     const images = Array.isArray(req.files.images)
       ? req.files.images
@@ -324,7 +322,6 @@ export const deleteReview = catchAsyncErrors(async (req, res, next) => {
 
 export const toggleFeatured = catchAsyncErrors(async (req, res, next) => {
   const { productId } = req.params;
-  console.log(req.params);
 
   const product = await Product.findByPk(productId);
   if (!product) {

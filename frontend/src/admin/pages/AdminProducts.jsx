@@ -292,8 +292,6 @@ const UpdateModal = ({ product, categories }) => {
       form.newImages.forEach((file) => data.append("images", file));
     }
 
-    console.log("id", product.id, "data:", data);
-
     dispatch(updateAdminProduct({ id: product.id, data }));
   };
 

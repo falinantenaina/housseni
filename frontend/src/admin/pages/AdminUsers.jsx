@@ -57,7 +57,6 @@ const AdminUsers = () => {
   const dispatch = useDispatch();
   const { users, totalUsers, loading } = useSelector((s) => s.admin);
   const { authUser } = useSelector((s) => s.auth);
-  console.log(authUser, "user: ", users);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");

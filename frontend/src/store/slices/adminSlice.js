@@ -453,7 +453,7 @@ const adminSlice = createSlice({
         state.loading = false;
       })
       .addCase(deleteAdminUser.fulfilled, (state, action) => {
-        state.users = state.users.filter((u) => u._id !== action.payload);
+        state.users = state.users.filter((u) => u.id !== action.payload);
         state.totalUsers = Math.max(0, state.totalUsers - 1);
       })
       .addCase(updateUserRole.pending, (state) => {
@@ -462,7 +462,7 @@ const adminSlice = createSlice({
       .addCase(updateUserRole.fulfilled, (state, action) => {
         state.loading = false;
         if (!action.payload) return;
-        const idx = state.users.findIndex((u) => u._id === action.payload._id);
+        const idx = state.users.findIndex((u) => u.id === action.payload.id);
         if (idx !== -1)
           state.users[idx] = { ...state.users[idx], ...action.payload };
       })
@@ -482,18 +482,18 @@ const adminSlice = createSlice({
       })
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        const idx = state.orders.findIndex((o) => o.id === action.payload.id);
         if (idx !== -1)
           state.orders[idx] = { ...state.orders[idx], ...action.payload };
       })
       .addCase(markOrderAsPaid.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        const idx = state.orders.findIndex((o) => o.id === action.payload.id);
         if (idx !== -1)
           state.orders[idx] = { ...state.orders[idx], ...action.payload };
       })
       .addCase(deleteAdminOrder.fulfilled, (state, action) => {
-        state.orders = state.orders.filter((o) => o._id !== action.payload);
+        state.orders = state.orders.filter((o) => o.id !== action.payload);
       })
       // Livraison — tarifs globaux
       .addCase(fetchShippingRates.fulfilled, (state, action) => {
@@ -505,13 +505,13 @@ const adminSlice = createSlice({
       // Livraison — par commande
       .addCase(updateOrderDeliveryZone.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        const idx = state.orders.findIndex((o) => o.id === action.payload.id);
         if (idx !== -1)
           state.orders[idx] = { ...state.orders[idx], ...action.payload };
       })
       .addCase(updateOrderShippingPrice.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const idx = state.orders.findIndex((o) => o._id === action.payload._id);
+        const idx = state.orders.findIndex((o) => o.id === action.payload.id);
         if (idx !== -1)
           state.orders[idx] = { ...state.orders[idx], ...action.payload };
       })
@@ -544,9 +544,7 @@ const adminSlice = createSlice({
       .addCase(updateAdminProduct.fulfilled, (state, action) => {
         state.loading = false;
         if (!action.payload) return;
-        const idx = state.products.findIndex(
-          (p) => p._id === action.payload._id,
-        );
+        const idx = state.products.findIndex((p) => p.id === action.payload.id);
         if (idx !== -1) state.products[idx] = action.payload;
         state.isUpdateModalOpen = false;
         state.selectedProduct = null;
@@ -559,23 +557,19 @@ const adminSlice = createSlice({
       })
       .addCase(deleteAdminProduct.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = state.products.filter((p) => p._id !== action.payload);
+        state.products = state.products.filter((p) => p.id !== action.payload);
       })
       .addCase(deleteAdminProduct.rejected, (state) => {
         state.loading = false;
       })
       .addCase(toggleAdminFeatured.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const idx = state.products.findIndex(
-          (p) => p._id === action.payload._id,
-        );
+        const idx = state.products.findIndex((p) => p.id === action.payload.id);
         if (idx !== -1) state.products[idx] = action.payload;
       })
       .addCase(toggleAdminSale.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const idx = state.products.findIndex(
-          (p) => p._id === action.payload._id,
-        );
+        const idx = state.products.findIndex((p) => p.id === action.payload.id);
         if (idx !== -1) state.products[idx] = action.payload;
       })
       // Categories
@@ -600,7 +594,7 @@ const adminSlice = createSlice({
         state.loading = false;
         if (!action.payload) return;
         const idx = state.categories.findIndex(
-          (c) => c._id === action.payload._id,
+          (c) => c.id === action.payload.id,
         );
         if (idx !== -1) state.categories[idx] = action.payload;
         state.isUpdateCategoryModalOpen = false;
@@ -615,7 +609,7 @@ const adminSlice = createSlice({
       .addCase(deleteAdminCategory.fulfilled, (state, action) => {
         state.loading = false;
         state.categories = state.categories.filter(
-          (c) => c._id !== action.payload,
+          (c) => c.id !== action.payload,
         );
       })
       .addCase(deleteAdminCategory.rejected, (state) => {

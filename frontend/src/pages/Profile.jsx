@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   Camera,
   Check,
   CheckCircle,
@@ -9,6 +10,7 @@ import {
   Mail,
   MapPin,
   Package,
+  RefreshCw,
   Save,
   Shield,
   Truck,
@@ -22,6 +24,7 @@ import { axiosInstance } from "../lib/axios";
 import { saveShippingInfo, updateProfile } from "../store/slices/authSlice";
 
 //  Helpers
+
 const Field = ({ label, icon: Icon, children }) => (
   <div>
     <label className="font-ui text-xs text-muted-foreground tracking-widest uppercase block mb-1.5">
@@ -36,7 +39,79 @@ const Field = ({ label, icon: Icon, children }) => (
   </div>
 );
 
+//  Bandeau vérification e-mail
+
+const EmailVerificationBanner = ({ authUser }) => {
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  if (authUser?.email_verified) {
+    return (
+      <div className="flex items-center gap-2.5 px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-sm font-ui">
+        <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+        <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
+          Adresse e-mail vérifiée
+        </span>
+      </div>
+    );
+  }
+
+  const handleResend = async () => {
+    setSending(true);
+    try {
+      await axiosInstance.post(
+        `/auth/email/resend-verification?frontendUrl=${encodeURIComponent(
+          window.location.origin,
+        )}`,
+      );
+      setSent(true);
+      toast.success("E-mail de confirmation renvoyé !");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Impossible d'envoyer l'e-mail.",
+      );
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="flex items-start gap-3 px-4 py-3.5 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
+      <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="font-ui font-semibold text-yellow-700 dark:text-yellow-400 text-sm">
+          Adresse e-mail non vérifiée
+        </p>
+        <p className="text-yellow-700/70 dark:text-yellow-400/70 text-xs font-ui mt-0.5">
+          Vérifiez votre boîte mail et cliquez sur le lien de confirmation.
+          {sent && (
+            <span className="ml-1 text-emerald-600 dark:text-emerald-400">
+              Un nouvel e-mail vient d'être envoyé.
+            </span>
+          )}
+        </p>
+      </div>
+      <button
+        onClick={handleResend}
+        disabled={sending || sent}
+        title="Renvoyer l'e-mail de confirmation"
+        className="shrink-0 flex items-center gap-1.5 text-xs font-ui font-semibold text-yellow-700 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {sending ? (
+          <Loader className="w-3.5 h-3.5 animate-spin" />
+        ) : sent ? (
+          <Check className="w-3.5 h-3.5 text-emerald-500" />
+        ) : (
+          <RefreshCw className="w-3.5 h-3.5" />
+        )}
+        {sent ? "Envoyé" : "Renvoyer"}
+      </button>
+    </div>
+  );
+};
+
 //  Onglet Informations personnelles
+
 const ProfileInfoTab = ({ authUser }) => {
   const dispatch = useDispatch();
   const { isUpdatingProfile } = useSelector((s) => s.auth);
@@ -74,7 +149,10 @@ const ProfileInfoTab = ({ authUser }) => {
     avatarPreview || authUser?.avatar?.url || authUser?.avatar || null;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Bandeau vérification */}
+      <EmailVerificationBanner authUser={authUser} />
+
       {/* Avatar */}
       <div className="flex items-center gap-5 p-4 bg-secondary/40 rounded-xl border border-border">
         <div className="relative group shrink-0">
@@ -111,10 +189,20 @@ const ProfileInfoTab = ({ authUser }) => {
           <p className="text-muted-foreground text-xs font-ui mt-0.5 truncate">
             {authUser?.email}
           </p>
+          {/* Badge vérifié / non vérifié sous le nom */}
+          {authUser?.email_verified ? (
+            <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-ui font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              <CheckCircle className="w-2.5 h-2.5" /> Vérifié
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-ui font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
+              <AlertCircle className="w-2.5 h-2.5" /> Non vérifié
+            </span>
+          )}
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="text-primary text-xs font-ui font-semibold mt-2 hover:underline"
+            className="block text-primary text-xs font-ui font-semibold mt-1.5 hover:underline"
           >
             Changer la photo
           </button>
@@ -176,6 +264,7 @@ const ProfileInfoTab = ({ authUser }) => {
 };
 
 //  Onglet Adresse de livraison
+
 const ShippingTab = ({ authUser }) => {
   const dispatch = useDispatch();
   const { isSavingShippingInfo } = useSelector((s) => s.auth);
@@ -218,21 +307,17 @@ const ShippingTab = ({ authUser }) => {
           <span className="text-foreground font-semibold">
             pré-remplies automatiquement
           </span>{" "}
-          lors de vos prochaines commandes. Vous pourrez toujours les modifier
-          avant de valider.
+          lors de vos prochaines commandes.
         </p>
       </div>
 
-      {/* Badge données sauvegardées */}
       {hasSavedData && !hasUnsavedChanges && (
         <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2.5 font-ui">
           <CheckCircle className="w-3.5 h-3.5 shrink-0" />
-          Adresse de livraison sauvegardée — pré-remplissage actif sur le
-          formulaire de commande
+          Adresse de livraison sauvegardée — pré-remplissage actif
         </div>
       )}
 
-      {/* Contact */}
       <div>
         <p className="font-ui text-xs text-muted-foreground tracking-widest uppercase mb-3 flex items-center gap-1.5">
           <User className="w-3.5 h-3.5" /> Contact
@@ -248,7 +333,6 @@ const ShippingTab = ({ authUser }) => {
         </Field>
       </div>
 
-      {/* Adresse */}
       <div>
         <p className="font-ui text-xs text-muted-foreground tracking-widest uppercase mb-3 flex items-center gap-1.5">
           <MapPin className="w-3.5 h-3.5" /> Adresse
@@ -306,7 +390,6 @@ const ShippingTab = ({ authUser }) => {
         </div>
       </div>
 
-      {/* Zones */}
       <div className="p-4 bg-secondary/40 border border-border rounded-xl">
         <p className="font-ui text-xs text-muted-foreground tracking-widest uppercase mb-3 flex items-center gap-1.5">
           <Truck className="w-3.5 h-3.5" /> Zones et tarifs de livraison
@@ -329,9 +412,6 @@ const ShippingTab = ({ authUser }) => {
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground font-ui mt-2">
-          La zone sera sélectionnée lors de chaque commande.
-        </p>
       </div>
 
       <div className="flex items-center justify-between pt-1">
@@ -364,6 +444,7 @@ const ShippingTab = ({ authUser }) => {
 };
 
 //  Onglet Mot de passe
+
 const PasswordField = ({
   label,
   field,
@@ -507,7 +588,9 @@ const PasswordTab = () => {
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${i <= strength ? strengthColor[strength] : "bg-border"}`}
+                className={`h-1.5 flex-1 rounded-full transition-colors ${
+                  i <= strength ? strengthColor[strength] : "bg-border"
+                }`}
               />
             ))}
           </div>
@@ -549,6 +632,7 @@ const PasswordTab = () => {
 };
 
 //  Page principale
+
 const TABS = [
   { id: "info", label: "Informations", icon: User },
   { id: "shipping", label: "Mon adresse", icon: MapPin },
@@ -575,7 +659,6 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background pt-[88px]">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
         <div className="mb-8">
           <span className="section-label">Compte</span>
           <h1 className="section-title">MON PROFIL</h1>
@@ -583,12 +666,12 @@ const Profile = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/*  Sidebar  */}
+          {/* Sidebar */}
           <aside className="lg:col-span-1">
             <div className="card-base p-5 space-y-1">
               {/* Avatar mini */}
               <div className="flex flex-col items-center text-center pb-4 mb-3 border-b border-border">
-                <div className="w-16 h-16 rounded-full border-2 border-border overflow-hidden bg-secondary flex items-center justify-center mb-3">
+                <div className="w-16 h-16 rounded-full border-2 border-border overflow-hidden bg-secondary flex items-center justify-center mb-3 relative">
                   {authUser?.avatar?.url ? (
                     <img
                       src={authUser.avatar.url}
@@ -597,6 +680,16 @@ const Profile = () => {
                     />
                   ) : (
                     <User className="w-7 h-7 text-muted-foreground" />
+                  )}
+                  {/* Pastille vérification */}
+                  {authUser.email_verified ? (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-card">
+                      <CheckCircle className="w-2.5 h-2.5 text-white" />
+                    </span>
+                  ) : (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-card">
+                      <AlertCircle className="w-2.5 h-2.5 text-white" />
+                    </span>
                   )}
                 </div>
                 <p className="font-ui font-bold text-foreground text-sm leading-tight">
@@ -613,8 +706,10 @@ const Profile = () => {
               {/* Nav tabs */}
               {TABS.map((tab) => {
                 const isActive = activeTab === tab.id;
-                // Badge "adresse manquante" sur l'onglet Mon adresse
-                const showBadge = tab.id === "shipping" && !hasAddress;
+                const showAddressBadge = tab.id === "shipping" && !hasAddress;
+                const showEmailBadge =
+                  tab.id === "info" && !authUser.email_verified;
+
                 return (
                   <button
                     key={tab.id}
@@ -627,10 +722,16 @@ const Profile = () => {
                   >
                     <tab.icon className="w-4 h-4 shrink-0" />
                     <span className="flex-1">{tab.label}</span>
-                    {showBadge && (
+                    {(showAddressBadge || showEmailBadge) && (
                       <span
-                        className="w-2 h-2 rounded-full bg-yellow-500 shrink-0"
-                        title="Adresse non renseignée"
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          isActive ? "bg-white/70" : "bg-yellow-500"
+                        }`}
+                        title={
+                          showEmailBadge
+                            ? "E-mail non vérifié"
+                            : "Adresse non renseignée"
+                        }
                       />
                     )}
                   </button>
@@ -639,10 +740,9 @@ const Profile = () => {
             </div>
           </aside>
 
-          {/*  Contenu  */}
+          {/* Contenu */}
           <div className="lg:col-span-3">
             <div className="card-base p-6">
-              {/* Titre de section */}
               <div className="mb-6 pb-4 border-b border-border">
                 {(() => {
                   const tab = TABS.find((t) => t.id === activeTab);

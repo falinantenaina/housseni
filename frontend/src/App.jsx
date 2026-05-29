@@ -24,14 +24,17 @@ const About = lazy(() => import("./pages/About"));
 const Cart = lazy(() => import("./pages/Cart"));
 const Contact = lazy(() => import("./pages/Contact"));
 const FAQ = lazy(() => import("./pages/FAQ"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Orders = lazy(() => import("./pages/Orders"));
 const Payment = lazy(() => import("./pages/Payment"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Products = lazy(() => import("./pages/Products"));
 const Profile = lazy(() => import("./pages/Profile"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
-// Pages admin — lazy (jamais visitées par les clients normaux)
+// Pages admin — lazy
 const AdminGuard = lazy(() => import("./admin/components/AdminGuard"));
 const AdminBanners = lazy(() => import("./admin/pages/AdminBanner"));
 const AdminCategories = lazy(() => import("./admin/pages/AdminCaterogies"));
@@ -71,7 +74,7 @@ const AppContent = () => {
       <ScrollToTop />
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          {/* Admin */}
+          {/*  Admin  */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route
             path="/admin"
@@ -122,7 +125,12 @@ const AppContent = () => {
             }
           />
 
-          {/* Client  */}
+          {/*  Auth (pages sans layout client)  */}
+          <Route path="/password/forgot" element={<ForgotPassword />} />
+          <Route path="/password/reset/:token" element={<ResetPassword />} />
+          <Route path="/email/verify/:token" element={<VerifyEmail />} />
+
+          {/*  Client  */}
           <Route
             path="/"
             element={

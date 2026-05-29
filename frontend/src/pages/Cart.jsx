@@ -18,8 +18,6 @@ const Cart = () => {
   const shipping = subtotal > 0 ? 0 : 0;
   const total = subtotal + shipping;
 
-  console.log(cart);
-
   if (cart.length === 0) {
     return (
       <div className="min-h-screen pt-[88px] flex items-center justify-center">
