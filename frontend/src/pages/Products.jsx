@@ -1,5 +1,5 @@
 import { Filter, Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import AISearchModal from "../components/Products/AISearchModal";
@@ -8,62 +8,55 @@ import ProductCard from "../components/Products/ProductCard";
 import { axiosInstance } from "../lib/axios";
 import { fetchProducts } from "../store/slices/productSlice";
 
+const PRICE_RANGES = [
+  { label: "Tous les prix", min: 0, max: 0 },
+  { label: "< 20 €", min: 0, max: 20 },
+  { label: "20 – 50 €", min: 20, max: 50 },
+  { label: "50 – 100 €", min: 50, max: 100 },
+  { label: "> 100 €", min: 100, max: 0 },
+];
+
 const Products = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { products, loading, totalProducts } = useSelector(
-    (state) => state.product,
-  );
+  const { products, loading, totalProducts } = useSelector((s) => s.product);
 
+  // ── Filtres locaux ──────────────────────────────────────────────────────────
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(""); // id UUID
   const [categories, setCategories] = useState([]);
   const [priceRange, setPriceRange] = useState(0);
   const [sortBy, setSortBy] = useState("newest");
-  const [featured, setFeatured] = useState(false); // ← AJOUT
+  const [featured, setFeatured] = useState(false);
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  console.log(selectedCategory);
-
   const perPage = 20;
 
-  const PRICE_RANGES = [
-    { label: "Tous les prix", min: 0, max: 0 },
-    { label: "< 20 €", min: 0, max: 20 },
-    { label: "20 – 50 €", min: 20, max: 50 },
-    { label: "50 – 100 €", min: 50, max: 100 },
-    { label: "> 100€", min: 100, max: 0 },
-  ];
-
-  // 1. Charger les catégories
+  // ── Chargement des catégories ───────────────────────────────────────────────
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axiosInstance.get("/categories");
-        setCategories(res.data.categories || []);
-      } catch (error) {
-        console.error("Erreur chargement catégories", error);
-      }
-    };
-    fetchCategories();
+    axiosInstance
+      .get("/categories")
+      .then((res) => setCategories(res.data.categories || []))
+      .catch(console.error);
   }, []);
 
-  // 2. Sync URL → state (dépend de `categories` pour résoudre le nom → id)
+  // ── Sync URL → state ────────────────────────────────────────────────────────
+  // On lit les paramètres URL et on les applique dès que les catégories sont
+  // disponibles (nécessaire pour résoudre le nom de catégorie en UUID).
+  const prevSearch = useRef("");
   useEffect(() => {
     const params = new URLSearchParams(location.search);
+    const categoryName = params.get("category") || "";
+    const searchParam = params.get("search") || "";
+    const featuredParam = params.get("featured") === "true";
 
-    const categoryName = params.get("category"); // ex: "Bois & Panneaux"
-    const searchParam = params.get("search"); // ex: "tole"
-    const featuredParam = params.get("featured"); // ex: "true"
+    setSearch(searchParam);
+    setFeatured(featuredParam);
+    setPage(1);
 
-    setSearch(searchParam || "");
-    setFeatured(featuredParam === "true");
-
-    // Le backend attend un category_id (UUID), mais l'URL contient le nom
-    // → on cherche l'id correspondant dans la liste des catégories
     if (categoryName && categories.length > 0) {
       const match = categories.find(
         (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
@@ -72,24 +65,52 @@ const Products = () => {
     } else if (!categoryName) {
       setSelectedCategory("");
     }
-  }, [location.search, categories]); // ← categories en dépendance !
+  }, [location.search, categories]);
 
-  // 3. Fetch produits (se déclenche quand un filtre change)
+  // ── Fetch produits ──────────────────────────────────────────────────────────
+  // On lit DIRECTEMENT les paramètres URL pour ne jamais être déphasé par rapport
+  // au state React (qui peut être mis à jour un tick plus tard).
   useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const categoryName = urlParams.get("category") || "";
+    const searchParam = urlParams.get("search") || "";
+    const featuredParam = urlParams.get("featured") === "true";
+
+    // Résoudre le nom de catégorie en UUID si les catégories sont chargées
+    let categoryId = selectedCategory;
+    if (categoryName && categories.length > 0) {
+      const match = categories.find(
+        (c) => c.name.toLowerCase() === categoryName.toLowerCase(),
+      );
+      categoryId = match?.id || "";
+    }
+
     const range = PRICE_RANGES[priceRange];
+
     const params = {
       page,
       limit: perPage,
       sort: sortBy,
-      ...(search && { search }),
-      ...(selectedCategory && { category_id: selectedCategory }),
-      ...(featured && { featured: "true" }), // ← AJOUT
+      ...(searchParam && { search: searchParam }),
+      ...(categoryId && { category_id: categoryId }),
+      ...(featuredParam && { featured: "true" }),
       ...(range.min && { minPrice: range.min }),
       ...(range.max && { maxPrice: range.max }),
     };
-    dispatch(fetchProducts(params));
-  }, [page, search, selectedCategory, priceRange, sortBy, featured, dispatch]);
 
+    dispatch(fetchProducts(params));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    location.search,
+    categories,
+    page,
+    priceRange,
+    sortBy,
+    selectedCategory,
+    featured,
+  ]);
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
   const clearFilters = () => {
     setSearch("");
     setSelectedCategory("");
@@ -100,7 +121,31 @@ const Products = () => {
     navigate("/products");
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = search.trim();
+    setPage(1);
+    if (trimmed) {
+      navigate(`/products?search=${encodeURIComponent(trimmed)}`);
+    } else {
+      navigate("/products");
+    }
+  };
+
   const totalPages = Math.ceil(totalProducts / perPage);
+
+  // ── Label du titre ──────────────────────────────────────────────────────────
+  const urlParams = new URLSearchParams(location.search);
+  const categoryName = urlParams.get("category") || "";
+  const searchParam = urlParams.get("search") || "";
+
+  const pageTitle = featured
+    ? "COUPS DE CŒUR"
+    : categoryName
+      ? categoryName.toUpperCase()
+      : searchParam
+        ? `"${searchParam}"`
+        : "TOUS LES PRODUITS";
 
   return (
     <div className="min-h-screen bg-background pt-[88px]">
@@ -109,14 +154,7 @@ const Products = () => {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
           <div>
             <span className="section-label">CATALOGUE</span>
-            <h1 className="section-title text-4xl lg:text-5xl">
-              {featured
-                ? "COUPS DE CŒUR"
-                : selectedCategory
-                  ? categories.find((c) => c.id === selectedCategory)?.name ||
-                    "Catégorie"
-                  : "TOUS LES PRODUITS"}
-            </h1>
+            <h1 className="section-title text-4xl lg:text-5xl">{pageTitle}</h1>
             <p className="text-muted-foreground mt-1">
               {totalProducts} produit{totalProducts > 1 ? "s" : ""}
             </p>
@@ -127,26 +165,38 @@ const Products = () => {
         <div className={`${showFilters ? "block" : "hidden"} lg:block mb-10`}>
           <div className="bg-card border border-border rounded-2xl p-6">
             <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 relative">
+              {/* Recherche texte */}
+              <form onSubmit={handleSearchSubmit} className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
                   placeholder="Rechercher un produit..."
                   value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPage(1);
-                  }}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="input-base w-full pl-12 py-3.5"
                 />
-              </div>
+                {/* Bouton submit invisible pour valider avec Entrée */}
+                <button type="submit" className="hidden" />
+              </form>
 
+              {/* Catégorie */}
               <div className="lg:w-64">
                 <select
                   value={selectedCategory}
                   onChange={(e) => {
-                    setSelectedCategory(e.target.value);
+                    const id = e.target.value;
+                    setSelectedCategory(id);
                     setPage(1);
+                    if (id) {
+                      const cat = categories.find((c) => c.id === id);
+                      navigate(
+                        cat
+                          ? `/products?category=${encodeURIComponent(cat.name)}`
+                          : "/products",
+                      );
+                    } else {
+                      navigate("/products");
+                    }
                   }}
                   className="input-base w-full py-3.5"
                 >
@@ -159,13 +209,15 @@ const Products = () => {
                 </select>
               </div>
 
-              {/* Filtre "Coups de cœur" visible */}
+              {/* Coups de cœur */}
               <div className="lg:w-52">
                 <select
                   value={featured ? "true" : ""}
                   onChange={(e) => {
-                    setFeatured(e.target.value === "true");
+                    const val = e.target.value === "true";
+                    setFeatured(val);
                     setPage(1);
+                    navigate(val ? "/products?featured=true" : "/products");
                   }}
                   className="input-base w-full py-3.5"
                 >
@@ -174,6 +226,7 @@ const Products = () => {
                 </select>
               </div>
 
+              {/* Tri */}
               <div className="lg:w-52">
                 <select
                   value={sortBy}
@@ -186,10 +239,10 @@ const Products = () => {
                   <option value="newest">Nouveautés</option>
                   <option value="price-asc">Prix croissant</option>
                   <option value="price-desc">Prix décroissant</option>
-                  {/*  <option value="rating">Mieux notés</option> */}
                 </select>
               </div>
 
+              {/* Fourchette de prix */}
               <div className="lg:w-60">
                 <select
                   value={priceRange}
@@ -207,6 +260,7 @@ const Products = () => {
                 </select>
               </div>
 
+              {/* Reset */}
               <button
                 onClick={clearFilters}
                 className="btn-secondary px-6 flex items-center gap-2 self-end lg:self-center"
@@ -217,18 +271,18 @@ const Products = () => {
           </div>
         </div>
 
-        {/* Mobile Filter Button */}
+        {/* Bouton filtres mobile */}
         <div className="lg:hidden mb-6">
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-2 btn-secondary px-5 py-3"
           >
             <Filter className="w-5 h-5" />
-            Filtres
+            {showFilters ? "Masquer les filtres" : "Filtres"}
           </button>
         </div>
 
-        {/* Products Grid */}
+        {/* Grille produits */}
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -244,6 +298,11 @@ const Products = () => {
             <h3 className="text-2xl font-semibold mb-2">
               Aucun produit trouvé
             </h3>
+            {searchParam && (
+              <p className="text-muted-foreground mb-2">
+                pour la recherche «&nbsp;{searchParam}&nbsp;»
+              </p>
+            )}
             <button onClick={clearFilters} className="btn-primary mt-6">
               Réinitialiser les filtres
             </button>

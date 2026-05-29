@@ -2,26 +2,31 @@ import { ArrowRight, Search, X } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { categories } from "../../data/products";
 import { closeSearchBar } from "../../store/slices/popupSlice";
 
 const SearchOverlay = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { isSearchBarOpen } = useSelector((state) => state.popup);
+
+  // Catégories réelles depuis le store (chargées au montage de Home)
+  const { categories } = useSelector((state) => state.admin);
+
   const [query, setQuery] = useState("");
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    const trimmed = query.trim();
+    if (!trimmed) return;
     dispatch(closeSearchBar());
-    navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+    navigate(`/products?search=${encodeURIComponent(trimmed)}`);
     setQuery("");
   };
 
   const handleCategory = (cat) => {
     dispatch(closeSearchBar());
-    navigate(`/products?category=${encodeURIComponent(cat)}`);
+    // On passe le nom : Products.jsx le résout en id via l'API categories
+    navigate(`/products?category=${encodeURIComponent(cat.name)}`);
   };
 
   if (!isSearchBarOpen) return null;
@@ -53,7 +58,7 @@ const SearchOverlay = () => {
               onChange={(e) => setQuery(e.target.value)}
               className="input-base w-full pl-12 pr-12 py-3.5 text-base"
             />
-            {query && (
+            {query.trim() && (
               <button
                 type="submit"
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-primary hover:text-primary/80 transition-colors"
@@ -63,22 +68,25 @@ const SearchOverlay = () => {
             )}
           </form>
 
-          <div className="mt-4">
-            <p className="font-ui text-xs text-muted-foreground tracking-widest uppercase mb-2">
-              Catégories populaires
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {categories.slice(0, 6).map((cat) => (
-                <button
-                  key={cat._id}
-                  onClick={() => handleCategory(cat.name)}
-                  className="badge-outline hover:bg-primary hover:text-white transition-colors cursor-pointer text-sm py-1 px-3"
-                >
-                  {cat.name}
-                </button>
-              ))}
+          {/* Catégories réelles */}
+          {categories.length > 0 && (
+            <div className="mt-4">
+              <p className="font-ui text-xs text-muted-foreground tracking-widest uppercase mb-2">
+                Catégories populaires
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {categories.slice(0, 8).map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategory(cat)}
+                    className="badge-outline hover:bg-primary hover:text-white hover:border-primary transition-colors cursor-pointer text-sm py-1 px-3"
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </>
